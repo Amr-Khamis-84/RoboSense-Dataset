@@ -1,113 +1,115 @@
+# RoboSense Dataset Usage Guide
 
-# 📘 RoboSense Dataset Usage Guide
+This document provides step-by-step instructions for reusing the RoboSense real-world dataset for industrial hazard detection, spatio-temporal sensor fusion, and machine learning experiments.
 
-This document provides detailed, step-by-step instructions for researchers and developers on how to reuse and extend the RoboSense dataset for machine learning applications, hazard prediction, and spatio-temporal sensor fusion analysis.
+This guide is fully aligned with the published RoboSense real dataset and does not include any synthetic data generation or cross-domain augmentation.
 
 ---
 
-## 🔍 1. Load and Explore the Dataset
+## 1. Load and Explore the Real Dataset
 
 ```python
 import pandas as pd
 
-# Load merged synthetic dataset
-df = pd.read_csv('Synthetic_Dataset.csv', parse_dates=[['Date', 'Time']])
-df['Timestamp'] = pd.to_datetime(df['Date_Time'])
+df = pd.read_csv('Real_Dataset.csv', parse_dates=['Timestamp'])
 df.set_index('Timestamp', inplace=True)
+
+print(df.head())
+print(df.columns)
 ```
+
+Each record typically contains:
+
+- Timestamp  
+- Suite_ID (AMR1, AMR2, Suite1, Suite2)  
+- Sensor readings (12 modalities)  
+- Optional position fields (x, y)  
+- Condition label (Normal, Hazard_1, Hazard_2, Hazard_3)  
 
 ---
 
-## 🔎 2. Filter Data by Condition or Sensor Suite
+## 2. Filter Data by Condition or Sensor Suite
 
 ```python
-# Filter by condition
-normal_df = df[df['Condition'] == 'Normal']
-hazard_df = df[df['Condition'] == 'Hazard_1']
+normal_df  = df[df['Condition'] == 'Normal']
+fire_df    = df[df['Condition'] == 'Hazard_1']
+temp_df    = df[df['Condition'] == 'Hazard_2']
+gas_df     = df[df['Condition'] == 'Hazard_3']
 
-# Filter by specific suite
-amr1_df = df[df['Suite_ID'] == 'AMR_1']
+amr1_df   = df[df['Suite_ID'] == 'AMR_1']
+suite1_df = df[df['Suite_ID'] == 'Suite_1']
 ```
 
 ---
 
-## 🧪 3. Prepare for Machine Learning
+## 3. Prepare Data for Machine Learning
 
 ```python
 from sklearn.model_selection import train_test_split
 
 X = df.drop(columns=['Condition'])
-y = df['Condition'].map({'Normal': 0, 'Hazard_1': 1})
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+y = df['Condition'].map({
+    'Normal': 0,
+    'Hazard_1': 1,
+    'Hazard_2': 2,
+    'Hazard_3': 3
+})
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42, stratify=y
+)
 ```
 
 ---
 
-## 🤖 4. Train a Classifier
+## 4. Train a Classifier
 
 ```python
 from sklearn.ensemble import RandomForestClassifier
-clf = RandomForestClassifier()
+
+clf = RandomForestClassifier(n_estimators=200, random_state=42)
 clf.fit(X_train, y_train)
 ```
 
 ---
 
-## 📊 5. Evaluate Model Performance
+## 5. Evaluate Model Performance
 
 ```python
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
+
 y_pred = clf.predict(X_test)
+
 print(classification_report(y_test, y_pred))
+print(confusion_matrix(y_test, y_pred))
 ```
 
 ---
 
-## 🔁 6. Cross-Domain Validation
+## File Description
 
-To assess generalizability:
-- Train on `Synthetic_Dataset.csv`
-- Test on real hazard segments from `Real_Dataset.csv`
-- Apply same preprocessing pipeline
+Real_Dataset.csv: Real industrial sensor dataset containing normal operation and 15 labeled hazard events across three hazard classes.
 
 ---
 
-## 🧩 7. Inject Hazards into Synthetic Normal Data
+## Requirements
 
-You may inject additional synthetic hazards using the helper script `Inject_Hazards_and_ML_Model.html`.
+- Python 3.7 or higher  
+- pandas  
+- scikit-learn  
+- numpy  
+- matplotlib  
 
-```python
-# Example pseudo-injection point
-injection_point = 50000
-normal_df.iloc[injection_point:injection_point+len(hazard_df)] = hazard_df.values
-```
+Install using:
 
----
-
-## 📂 File Descriptions
-
-| File Name                    | Description |
-|-----------------------------|-------------|
-| `Real_Dataset.csv`          | Contains real sensor data (normal + hazard) |
-| `Synthetic_Dataset.csv`     | Synthetic normal and hazard data |
-| `Inject_Hazards_and_ML_Model.html` | Notebook for hazard injection and ML testing |
+pip install pandas scikit-learn numpy matplotlib
 
 ---
 
-## 🛠️ Requirements
+## Contact
 
-- Python 3.7+
-- pandas, scikit-learn, matplotlib, numpy
-
-Install with:
-```bash
-pip install pandas scikit-learn matplotlib numpy
-```
-
----
-
-## 📬 Contact
-
-**Amr Khamis**  
-GitHub: [Amr-Khamis-84](https://github.com/Amr-Khamis-84)
+Amr Khamis  
+Arab Academy for Science, Technology and Maritime Transport  
+Email: amr.khamis@aast.edu  
+GitHub: https://github.com/Amr-Khamis-84
