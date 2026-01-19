@@ -140,7 +140,7 @@ If you use this dataset, please cite the following paper:
 title = {Hybrid real-synthetic datasetframework for robotichazard detection in industrialenvironments},
 author = {Khamis, Amr and Shaban, Heba A. and Fayed, Heba A. and Aly, Moustafa H.},
 journal = {Scientific Reports},
-year = {2025},
+year = {2026},
 url = {https://rdcu.be/eYRgE}
 },
 ```
